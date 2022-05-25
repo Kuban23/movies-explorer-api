@@ -1,10 +1,14 @@
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 const Error400 = require('../errors/Error400');
 const Error409 = require('../errors/Error409');
 const Error404 = require('../errors/Error404');
 
-// Получаю данные текущего пользователя
+const { NODE_ENV, JWT_SECRET } = process.env;
+const AuthentificationError = 401;
+
+// Получаю данные текущего пользователя  GET /users/me
 module.exports.getCurrentUser = (req, res, next) => { // ?
   // Ищу пользователя
   User.findById(req.user._id)
@@ -67,5 +71,19 @@ module.exports.updateUserInfo = (req, res, next) => {
       } else {
         next(err);
       }
+    });
+};
+
+// Создал контроллер login который проверяет логин и пароль
+module.exports.login = (req, res, next) => { // ?
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // Cоздал токен и отправляю его пользователю
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'strongest-key-ever', { expiresIn: '7d' });
+      return res.status(200).send({ token }); // возвращаем токен в теле ответа
+    })
+    .catch(() => {
+      next(new AuthentificationError('Неправильный адрес почты или пароль'));
     });
 };
