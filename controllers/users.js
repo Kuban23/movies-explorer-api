@@ -4,9 +4,9 @@ const User = require('../models/user');
 const Error400 = require('../errors/Error400');
 const Error409 = require('../errors/Error409');
 const Error404 = require('../errors/Error404');
+const Error401 = require('../errors/Error401');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
-const AuthentificationError = 401;
 
 // Получаю данные текущего пользователя  GET /users/me
 module.exports.getCurrentUser = (req, res, next) => { // ?
@@ -80,10 +80,11 @@ module.exports.login = (req, res, next) => { // ?
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // Cоздал токен и отправляю его пользователю
-      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'strongest-key-ever', { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, `${NODE_ENV === 'production' ? JWT_SECRET : 'eb28135ebcfc17578f96d4d65b6c7871f2c803be4180c165061d5c2db621c51b'}`, { expiresIn: '7d' });
+      console.log(token);
       return res.status(200).send({ token }); // возвращаем токен в теле ответа
     })
     .catch(() => {
-      next(new AuthentificationError('Неправильный адрес почты или пароль'));
+      next(new Error401('Неправильный адрес почты или пароль'));
     });
 };
