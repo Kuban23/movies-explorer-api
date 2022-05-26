@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+// const validator = require('validator');
 
-function validatorUrl(value) {
-  return validator.isURL(value);
-}
+// function urlValidator(value) {
+//   return validator.isURL(value);
+// }
+const urlValidator = require('../middlewares/urlValidator');
 
 const movieSchema = new mongoose.Schema({
   country: {
@@ -29,17 +30,17 @@ const movieSchema = new mongoose.Schema({
   image: {
     type: String,
     required: true,
-    validate: validatorUrl,
+    validate: urlValidator,
   },
   trailerLink: {
     type: String,
     required: true,
-    validate: validatorUrl,
+    validate: urlValidator,
   },
   thumbnail: {
     type: String,
     required: true,
-    validate: validatorUrl,
+    validate: urlValidator,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
