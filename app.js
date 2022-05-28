@@ -46,6 +46,12 @@ app.use(bodyParser.urlencoded({ extended: true })); // для приёма ве�
 // Подключил мидлвар для работы с Cors
 app.use(cors);
 
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 // Маршруты для регистрации и авторизации
 app.post('/signup', celebrate({
   body: Joi.object().keys({
