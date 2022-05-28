@@ -62,18 +62,23 @@ module.exports.createMovie = (req, res, next) => {
 // Удаляю фильм
 module.exports.deleteMovie = (req, res, next) => {
   // Нахожу фильм и удаляю его
-  Movie.findByIdAndRemove(req.params.movieId)
-    .then((movie) => { // Если не нашли фильм, то кидаем ошибку и попадаем в catch
-      if (!movie) {
-        next(new Error404('Фильм с указанным _id не найден'));
-      }
-      // Делаем проверку, может ли пользователь удалить фильм
-      // user._id имеет тип String, movie.owner иммет тип object, приводим его к строке
+  Movie.findById(req.params.movieId)
+    .orFail(() => {
+      // Если мы оказались здесь, то запрос в момент запроса ничего не нашлось
+      throw new Error404('Фильм с заданным ID отсутствует');
+    })
+    .then((movie) => {
+      // Делаю проверку может ли пользователь удалить фильм
+      // movie.owner._id приходит с форматом object, user._id приходит с типом string,
+      // привожу состояние к строке
       if (req.user._id !== movie.owner.toString()) {
+        // выдаю ошибку, что пользователь не может это делать
         next(new Error403('Невозможно удалить чужой фильм'));
       }
       return movie.remove()
-        .then(() => res.status(200).send({ data: movie, message: 'Фильм успешно удален' }));
+        .then(() => {
+          res.send({ message: 'Фильм успешно удалён!' });
+        });
     })
     .catch(next);
 };
