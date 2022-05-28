@@ -14,6 +14,7 @@ const bodyParser = require('body-parser');
 const auth = require('./middlewares/auth');
 const Error404 = require('./errors/Error404');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const cors = require('./middlewares/cors');
 
 // Настраиваем и слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -41,6 +42,9 @@ app.use(requestLogger);
 // Выбирваем методы для работы спакетами
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
+
+// Подключил мидлвар для работы с Cors
+app.use(cors);
 
 // Маршруты для регистрации и авторизации
 app.post('/signup', celebrate({
