@@ -44,21 +44,15 @@ module.exports.createUser = (req, res, next) => {
       } else {
         next(err);
       }
-    });
+    })
+    .catch(next);
 };
 
 // Обновляем профиль пользователя (email и имя) PATCH /users/me
 module.exports.updateUserInfo = (req, res, next) => {
   const { name, email } = req.body;
   // ищем пользователя по id
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, email },
-    {
-      new: true,
-      runValidators: true,
-    },
-  )
+  User.findByIdAndUpdate(req.user._id, { name, email }, { new: true, runValidators: true })
     .then((newUserInfo) => {
       if (!newUserInfo) {
         next(new Error404('Пользователь с указанным _id не найден'));
@@ -68,10 +62,14 @@ module.exports.updateUserInfo = (req, res, next) => {
     .catch((err) => {
       if ((err.name === 'ValidationError' || err.name === 'CastError')) {
         next(new Error400('Переданы некорректные данные'));
+      }
+      if (err.code === 11000) {
+        next(new Error409('Пользователь с таким email зарегистрирован'));
       } else {
         next(err);
       }
-    });
+    })
+    .catch(next);
 };
 
 // Создал контроллер login который проверяет логин и пароль
@@ -80,7 +78,15 @@ module.exports.login = (req, res, next) => { // ?
   return User.findUserByCredentials(email, password)
     .then((user) => {
       // Cоздал токен и отправляю его пользователю
-      const token = jwt.sign({ _id: user._id }, `${NODE_ENV === 'production' ? JWT_SECRET : 'eb28135ebcfc17578f96d4d65b6c7871f2c803be4180c165061d5c2db621c51b'}`, { expiresIn: '7d' });
+      // const token = jwt.sign(
+      // { _id: user._id }, `${NODE_ENV === 'production' ?
+      // JWT_SECRET : 'eb28135ebcfc17578f96d4d65b6c7871f2c803be4180c165061d5c2db621c51b'}`,
+      // { expiresIn: '7d' });
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret',
+        { expiresIn: '7d' },
+      );
       console.log(token);
       return res.status(200).send({ token }); // возвращаем токен в теле ответа
     })

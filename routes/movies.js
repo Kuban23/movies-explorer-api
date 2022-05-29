@@ -9,15 +9,15 @@ const { celebrate, Joi } = require('celebrate');
 const { getAllMovies, deleteMovie, createMovie } = require('../controllers/movies');
 const urlValidator = require('../middlewares/urlValidator');
 
-router.get('/movies', getAllMovies);
+router.get('/', getAllMovies);
 
-router.delete('/movies/:movieId', celebrate({
+router.delete('/:movieId', celebrate({
   params: Joi.object().keys({
     movieId: Joi.string().length(24).hex(),
   }),
 }), deleteMovie);
 
-router.post('/movies', celebrate({
+router.post('/', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
     director: Joi.string().required(),
